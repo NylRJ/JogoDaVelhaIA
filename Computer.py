@@ -14,7 +14,7 @@ class Computer:
     def is_terminal(self, board):
 
         score = 0
-        game_over = 0
+        game_over = False
         winner = 0
 
         # verificando se o jogador 1 venceu
@@ -129,8 +129,63 @@ class Computer:
 
         return v, move
 
-    def montecarlo(self):
-        pass
+    def montecarlo(self, board, player=-1, simulations=None):
+
+        # Verificando se é a última jogada da partida
+        if len(self.get_availables(board)) == 1:
+            return self.random(board)
+
+        # Definindo a quantidade de simulações
+        if simulations is None:
+            simulations = 1000
+
+        # Vetor para salvar as jogadas
+        win_moves = []
+
+        # Realizando a simulação das jogadas
+        for i in range(simulations):
+
+            player_simulation = player
+            board_simulation = copy.copy(board)
+
+            # Selecionar o primeiro movimento utilizando a política aleatória
+            move = self.random(board_simulation)
+
+            # Expandindoo o corrente estado
+            board_simulation = self.play_move(board_simulation, move, player_simulation)
+
+            # verifico se é um nó terminal
+            game_over, score, winner = self.is_terminal(board_simulation)
+
+            # Realizando a simulação do jogo apartir do estado corrente
+            while not game_over:
+                # Troca o jogador
+                player_simulation = -player_simulation
+
+                # Selecionando uma jogada aleatória
+                move_simulation = self.random(board_simulation)
+
+                # Realiza a jogada
+                board_simulation = self.play_move(board_simulation, move_simulation, player_simulation)
+
+                # verifico se é um nó terminal
+                game_over, score, winner = self.is_terminal(board_simulation)
+                # Salvando os movimentos
+
+            if player == -1 and score <= 0:
+                win_moves.append(move)
+
+            elif player == 1 and score >= 0:
+                win_moves.append(move)
+                # Selecionar a jogada com base no melhor resultado
+
+        moves, count = np.unique(win_moves, return_counts=True)
+        print(f'Número de vitórias: {len(win_moves)}\
+                       \nMovimentos:\n{moves}\nNum Jogadas:\n{count}')
+
+        evaluated_movements = self.get_availables(board)
+        best_move = evaluated_movements[np.argmax(count)]
+        return best_move
 
     def alpha_beta(self):
         pass
